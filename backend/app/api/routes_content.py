@@ -39,6 +39,7 @@ def update_draft(project_id: str, payload: Dict[str, Any] = Body(...), db: Sessi
     return draft
 
 @router.post("/generate-carousel")
+@router.post("/generate/carousel")
 def generate_carousel(project_id: str, db: Session = Depends(get_db)):
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
@@ -106,6 +107,7 @@ def generate_carousel(project_id: str, db: Session = Depends(get_db)):
     }
 
 @router.post("/generate-static")
+@router.post("/generate/static")
 def generate_static_post(project_id: str, db: Session = Depends(get_db)):
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
@@ -156,6 +158,9 @@ def get_reel_voices(project_id: str):
     """Returns available Indian regional languages and compatible neural voices"""
     return ai_provider_service.get_available_voices()
 
+VALID_THEMES = {"steer_brand", "warm_editorial", "colourful_cartoon", "playful_pastel", "pastel_educational", "cinematic", "clean_infographic", "inside_anatomy"}
+VALID_STYLES = {"talking_characters", "characters", "inside_your_body", "everyday_human", "animated_explainer", "professional", "everyday"}
+
 @router.post("/update-reel-config")
 def update_reel_config(
     project_id: str,
@@ -164,7 +169,7 @@ def update_reel_config(
 ):
     """
     Regenerates or translates the reel storyboard script to match the user's
-    selected mode (everyday vs professional), visual style, and regional language.
+    selected mode (everyday vs professional), visual style, visual theme, and regional language.
     """
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
@@ -173,6 +178,20 @@ def update_reel_config(
     draft = db.query(ContentDraft).filter(ContentDraft.project_id == project_id).first()
     if not draft:
         raise HTTPException(status_code=404, detail="No draft found")
+
+    # Validate visual theme and style
+    theme_to_use = req.visual_theme or "warm_editorial"
+    if theme_to_use not in VALID_THEMES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported visual theme '{theme_to_use}'. Supported themes: {', '.join(sorted(VALID_THEMES))}"
+        )
+
+    if req.visual_style and req.visual_style not in VALID_STYLES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported visual style '{req.visual_style}'. Supported styles: 'talking_characters', 'inside_your_body', 'everyday_human', 'animated_explainer', 'professional'"
+        )
 
     # Get claims for source grounding
     from app.models.models import Claim
@@ -185,7 +204,7 @@ def update_reel_config(
     new_reel_data = ai_provider_service.generate_regional_reel_script(
         mode=req.mode,
         visual_style=req.visual_style,
-        visual_theme=req.visual_theme or "warm_editorial",
+        visual_theme=theme_to_use,
         language=req.language,
         voice_name=req.voice_name,
         paper_title=project.title,
@@ -245,9 +264,13 @@ async def regenerate_scene(
             current_scene["subtitle_text"] = req.subtitle_text
         if req.on_screen_text:
             current_scene["on_screen_text"] = req.on_screen_text
-        if req.visual_cue:
-            current_scene["visual_cue"] = req.visual_cue
+        if req.visual_theme:
+            if req.visual_theme not in VALID_THEMES:
+                raise HTTPException(status_code=400, detail=f"Unsupported visual theme '{req.visual_theme}'.")
+            current_scene["visual_theme"] = req.visual_theme
         if req.visual_style:
+            if req.visual_style not in VALID_STYLES:
+                raise HTTPException(status_code=400, detail=f"Unsupported visual style '{req.visual_style}'.")
             current_scene["visual_style"] = req.visual_style
             current_scene["animation_action"] = req.visual_style
         if req.animation_action:
@@ -299,6 +322,7 @@ async def regenerate_scene(
     }
 
 @router.post("/generate-reel")
+@router.post("/generate/reel")
 async def generate_reel(project_id: str, db: Session = Depends(get_db)):
     """
     Renders actual vertical 9:16 MP4 video reel:

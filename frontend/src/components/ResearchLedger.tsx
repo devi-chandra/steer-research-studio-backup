@@ -98,7 +98,9 @@ export const ResearchLedger: React.FC<ResearchLedgerProps> = ({
           <div>
             <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-clay)', textTransform: 'uppercase' }}>Page Count</div>
             <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-ink)', marginTop: '2px' }}>
-              {meta.page_count || 5} Pages Analyzed
+              {meta.pages_analyzed && meta.page_count && meta.pages_analyzed < meta.page_count
+                ? `${meta.pages_analyzed} of ${meta.page_count} Pages Analyzed`
+                : `${meta.page_count || 5} Pages Analyzed`}
             </div>
           </div>
         </div>
@@ -125,11 +127,7 @@ export const ResearchLedger: React.FC<ResearchLedgerProps> = ({
               {meta.key_findings && meta.key_findings.length > 0 ? (
                 meta.key_findings.map((f: string, idx: number) => <li key={idx}>{f}</li>)
               ) : (
-                <>
-                  <li>10-minute post-meal walk attenuates glucose spike by 34%.</li>
-                  <li>Insulin-independent GLUT4 clearance reduces pancreatic demand.</li>
-                  <li>Walking within 30 minutes is 3x more effective than delayed walking.</li>
-                </>
+                <li style={{ color: 'var(--color-ink-muted)', fontStyle: 'italic' }}>No specific clinical discoveries extracted yet for this paper.</li>
               )}
             </ul>
           </div>
@@ -142,10 +140,7 @@ export const ResearchLedger: React.FC<ResearchLedgerProps> = ({
               {meta.limitations && meta.limitations.length > 0 ? (
                 meta.limitations.map((l: string, idx: number) => <li key={idx}>{l}</li>)
               ) : (
-                <>
-                  <li>Evaluated acute 7-day postprandial responses in South Asian adults with prediabetes.</li>
-                  <li>Long-term impact on HbA1c requires 12-month cohort tracking.</li>
-                </>
+                <li style={{ color: 'var(--color-ink-muted)', fontStyle: 'italic' }}>No specific study limitations recorded for this document.</li>
               )}
             </ul>
           </div>

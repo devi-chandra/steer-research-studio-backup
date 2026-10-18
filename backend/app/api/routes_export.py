@@ -112,6 +112,7 @@ def build_all_exports(project_id: str, db: Session = Depends(get_db)):
     }
 
 @router.get("/powerpoint")
+@router.get("/pptx")
 def download_powerpoint(project_id: str, db: Session = Depends(get_db)):
     """
     Returns the PowerPoint (.pptx) file for the project, generating it on the fly if needed.

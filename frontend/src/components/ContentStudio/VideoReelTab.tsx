@@ -51,14 +51,14 @@ export const VideoReelTab: React.FC<VideoReelTabProps> = ({
   const [showManifestModal, setShowManifestModal] = useState<boolean>(false);
 
   const reelData: ReelData = draft?.reel_data || {
-    reel_title: 'The 10-Minute Post-Dinner Habit That Beats Blood Sugar Spikes',
-    hook: 'Stop sitting on the couch after dinner! Here is what 10 minutes does to your glucose.',
-    target_duration_seconds: 38,
+    reel_title: project.title ? `Clinical Translation: ${project.title}` : 'Clinical Research Reel',
+    hook: project.claims?.[0]?.claim_text ? `What does clinical research show about ${project.title}?` : 'Explore the peer-reviewed evidence.',
+    target_duration_seconds: 30,
     mode: 'everyday',
     visual_style: 'talking_characters',
     language: 'en',
     voice_name: 'en-IN-NeerjaNeural',
-    practical_takeaway: 'Take a 10-minute gentle stroll right after eating to flatten your glucose curve.',
+    practical_takeaway: 'Peer-reviewed evidence translated for real-world lifestyle protection.',
     scenes: []
   };
 

@@ -25,6 +25,21 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const resetForm = () => {
+    setTitle('');
+    setCampaignTopic('');
+    setUrl('');
+    setFile(null);
+    setErrorMessage(null);
+    setIsLoading(false);
+  };
+
+  React.useEffect(() => {
+    if (isOpen) {
+      resetForm();
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleFileChange = (selectedFile: File) => {
@@ -38,11 +53,9 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
       return;
     }
     setFile(selectedFile);
-    if (!title) {
-      // Auto populate clean title from filename
-      const clean = selectedFile.name.replace(/\.pdf$/i, '').replace(/[_-]/g, ' ');
-      setTitle(clean.charAt(0).toUpperCase() + clean.slice(1));
-    }
+    // Auto populate clean title from filename for the new document
+    const clean = selectedFile.name.replace(/\.pdf$/i, '').replace(/[_-]/g, ' ');
+    setTitle(clean.charAt(0).toUpperCase() + clean.slice(1));
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -101,6 +114,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
       await api.processPipeline(proj.id);
 
       setIsLoading(false);
+      resetForm();
       onClose();
       onProjectCreated(proj.id);
     } catch (err: any) {
@@ -110,7 +124,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={() => { resetForm(); onClose(); }}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ padding: '36px' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
@@ -121,7 +135,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
             <h2 style={{ fontSize: '26px', color: 'var(--color-ink)' }}>Add Research Paper</h2>
           </div>
           <button 
-            onClick={onClose} 
+            onClick={() => { resetForm(); onClose(); }} 
             disabled={isLoading}
             style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-clay)' }}
           >

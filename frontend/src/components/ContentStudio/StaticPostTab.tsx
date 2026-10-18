@@ -20,12 +20,12 @@ export const StaticPostTab: React.FC<StaticPostTabProps> = ({
 
   const staticData: StaticData = draft?.static_data || {
     eyebrow: 'DOCTOR-LED METABOLIC INSIGHT',
-    headline: '10 Minutes of Walking Beats 45 Minutes of Cardio If Your Timing Is Right.',
-    body_copy: 'A clinical study of South Asian adults revealed that a gentle 10-minute walk begun within 30 minutes of a meal blunts postprandial glucose spikes by 34%.',
-    practical_takeaway: 'The Steer Rule: Walk 100 paces immediately after dinner.',
+    headline: project.title ? `Clinical Translation: ${project.title}` : 'Awaiting research processing...',
+    body_copy: project.paper_metadata?.key_findings?.[0] || 'Process paper evidence to generate verified post copy.',
+    practical_takeaway: 'Grounded in peer-reviewed clinical research.',
     badge: 'Steer Clinical Standard',
-    source_citation: 'Metabolic Trial (n=48)',
-    claim_ids: ['CLM-001'],
+    source_citation: project.paper_metadata?.journal ? `${project.paper_metadata.journal}` : 'Verified Clinical Source',
+    claim_ids: project.claims?.slice(0, 1).map((c) => c.claim_id) || [],
   };
 
   const artifact = project.artifacts.find((a) => a.artifact_type === 'static_post');

@@ -43,6 +43,16 @@ export const MedicalReviewDashboard: React.FC<MedicalReviewDashboardProps> = ({
   const [showAuditDetails, setShowAuditDetails] = useState<boolean>(true);
 
   useEffect(() => {
+    if (selectedClaimId) {
+      setActiveClaimId(selectedClaimId);
+    } else if (project.claims && project.claims.length > 0) {
+      setActiveClaimId(project.claims[0].claim_id);
+    } else {
+      setActiveClaimId('');
+    }
+  }, [project.id, selectedClaimId, project.claims]);
+
+  useEffect(() => {
     setIsLoadingAudit(true);
     api.getCrossFormatChecks(project.id)
       .then((data) => {

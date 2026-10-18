@@ -140,17 +140,25 @@ async def process_project_pipeline(project_id: str, db: Session = Depends(get_db
 
         t_ingest_ms = int((time.time() - t_ingest_start) * 1000)
 
+        # Update project title if extracted title is a real paper title
+        ext_title = extracted_data.get("title")
+        if ext_title and len(ext_title) > 5 and not ext_title.lower().endswith(".pdf"):
+            project.title = ext_title
+
         # Stage 2: AI Claim Extraction
         project.status = "extracting"
         project.current_stage = 2
         project.stage_message = "Stage 2/7: Extracting structured claims, quantitative findings, and exact quotes..."
         project.paper_metadata = {
-            "title": extracted_data.get("title"),
-            "authors": extracted_data.get("authors"),
+            "title": ext_title or project.title,
+            "authors": extracted_data.get("authors") or [],
             "year": extracted_data.get("year"),
             "doi": extracted_data.get("doi"),
+            "journal": extracted_data.get("journal"),
+            "study_type": extracted_data.get("study_type"),
             "abstract": extracted_data.get("abstract"),
-            "page_count": extracted_data.get("page_count")
+            "page_count": extracted_data.get("page_count"),
+            "pages_analyzed": extracted_data.get("pages_analyzed", extracted_data.get("page_count"))
         }
         project.extracted_text_pages = extracted_data.get("pages")
         db.commit()
@@ -168,9 +176,13 @@ async def process_project_pipeline(project_id: str, db: Session = Depends(get_db
         if ai_meta:
             updated_meta = dict(project.paper_metadata)
             for k, v in ai_meta.items():
-                if v and not updated_meta.get(k):
+                if v:
                     updated_meta[k] = v
             project.paper_metadata = updated_meta
+            if updated_meta.get("title") and len(updated_meta["title"]) > 5:
+                project.title = updated_meta["title"]
+        db.commit()
+
 
         # Stage 3: Evidence Verification Ledger
         project.status = "verifying"
@@ -308,3 +320,17 @@ def delete_project(project_id: str, db: Session = Depends(get_db)):
     db.delete(project)
     db.commit()
     return {"status": "success", "message": f"Project {project_id} deleted"}
+
+@router.get("/{project_id}/cross-format-checks")
+def get_project_cross_format_checks(project_id: str, db: Session = Depends(get_db)):
+    from app.models.models import ContentDraft, Claim
+    from app.services.cross_format_claims import cross_format_claims_service
+
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    draft = db.query(ContentDraft).filter(ContentDraft.project_id == project_id).first()
+    claims = db.query(Claim).filter(Claim.project_id == project_id).all()
+
+    return cross_format_claims_service.audit_project_consistency(project=project, draft=draft, claims=claims)

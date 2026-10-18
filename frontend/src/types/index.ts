@@ -9,6 +9,8 @@ export interface PaperMetadata {
   key_findings?: string[];
   limitations?: string[];
   page_count?: number;
+  pages_analyzed?: number;
+  sample_size?: string;
 }
 
 export interface Claim {

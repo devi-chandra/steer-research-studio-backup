@@ -166,10 +166,19 @@ class AnimationEngine:
                 "sub_bg": (30, 20, 25),
                 "sub_text": (255, 255, 255),
                 "progress_active": (234, 88, 12),
-                "progress_bg": (254, 215, 170),
             }
         }
-        return themes.get(theme_name or "", themes["warm_editorial"])
+        if not theme_name:
+            return themes["warm_editorial"]
+        if theme_name == "pastel_educational":
+            return themes["playful_pastel"]
+        if theme_name not in themes:
+            raise ValueError(
+                f"Unsupported visual theme '{theme_name}'. "
+                f"Available themes: {list(themes.keys()) + ['pastel_educational']}"
+            )
+        return themes[theme_name]
+
 
     def render_scene_frames(
         self,
@@ -1170,7 +1179,7 @@ class AnimationEngine:
             # Pulse Icon
             draw.text((w_cx - 85, w_cy - 110), "♥ 84 BPM", font=self._get_font(24), fill=(244, 63, 94))
             draw.text((w_cx - 110, w_cy - 40), "15 MIN", font=self._get_font(60), fill=(255, 255, 255))
-            draw.text((w_cx - 120, w_cy + 35), "SHATAPADI TIMER", font=self._get_font(24), fill=pal["accent_primary"])
+            draw.text((w_cx - 105, w_cy + 35), "CLINICAL TIMER", font=self._get_font(24), fill=pal["accent_primary"])
 
             # Prompt Card below
             call_top = w_cy + 220
@@ -1215,8 +1224,14 @@ class AnimationEngine:
             # Pace & Habit Status
             clock_box_top = box_top + 370
             draw.rounded_rectangle([60, clock_box_top, self.width - 60, clock_box_top + 130], radius=18, fill=pal["card_bg"], outline=pal["card_border"], width=2)
-            draw.text((90, clock_box_top + 25), "SHATAPADI: 100 SLOW PACED STEPS", font=self._get_font(24), fill=pal["accent_primary"])
-            draw.text((90, clock_box_top + 65), "Conversational pace • No strenuous gym workout needed", font=self._get_font(18), fill=pal["text_primary"])
+            walk_banner = (scene.get("on_screen_text") or "ACTIONABLE LIFESTYLE HABIT").upper()
+            if len(walk_banner) > 34:
+                walk_banner = walk_banner[:32] + "..."
+            draw.text((90, clock_box_top + 25), walk_banner, font=self._get_font(22), fill=pal["accent_primary"])
+            sub_desc = scene.get("subtitle_text") or "Conversational pace • Sustainable lifestyle habit"
+            if len(sub_desc) > 46:
+                sub_desc = sub_desc[:43] + "..."
+            draw.text((90, clock_box_top + 65), sub_desc, font=self._get_font(18), fill=pal["text_primary"])
 
             cgm_top = clock_box_top + 155
             draw.rounded_rectangle([60, cgm_top, self.width - 60, box_bottom - 20], radius=18, fill=(240, 253, 244), outline=(134, 239, 172), width=2)
@@ -1259,9 +1274,9 @@ class AnimationEngine:
             # 3 Structured Checklist Pillars
             list_top = cy + 140
             checklist = [
-                ("10 Minutes Only", "Easy stroll after your largest meal"),
-                ("Shatapadi Tradition", "Backed by modern CGM crossover science"),
-                ("Non-Insulin Uptake", "Relieves stress on your pancreas")
+                ("Sustainable Routine", "Consistent daily micro-habits"),
+                ("Evidence Grounded", "Backed by peer-reviewed clinical science"),
+                ("Metabolic Balance", "Targeted lifestyle for long-term health")
             ]
             for c_i, (head, sub) in enumerate(checklist):
                 c_y = list_top + c_i * 95
@@ -1292,7 +1307,10 @@ class AnimationEngine:
         if role == "cgm_intro" or (isinstance(role, str) and "cgm" in role.lower()) or scene_idx == 0:
             # SCENE 1: Kinetic Continuous Glucose Sensor
             draw.rounded_rectangle([48, box_top, self.width - 48, box_bottom], radius=24, fill=pal["card_bg"], outline=pal["card_border"], width=3)
-            draw.text((75, box_top + 24), "CONTINUOUS GLUCOSE MONITORING (n=48)", font=self._get_font(22), fill=pal["accent_secondary"])
+            title_banner = (scene.get("on_screen_text") or "CLINICAL EVIDENCE MONITORING").upper()
+            if len(title_banner) > 36:
+                title_banner = title_banner[:33] + "..."
+            draw.text((75, box_top + 24), title_banner, font=self._get_font(22), fill=pal["accent_secondary"])
 
             cx = self.width // 2
             cy = box_top + 280
@@ -1318,9 +1336,13 @@ class AnimationEngine:
             # Info Card below
             info_top = cy + 175
             draw.rounded_rectangle([75, info_top, self.width - 75, box_bottom - 40], radius=18, fill=pal["badge_bg"], outline=pal["card_border"], width=2)
-            draw.text((95, info_top + 22), "RANDOMIZED CROSSOVER DESIGN", font=self._get_font(20), fill=pal["badge_text"])
-            draw.text((95, info_top + 55), "48 adults with prediabetes monitored via CGM.", font=self._get_font(18), fill=pal["text_primary"])
-            draw.text((95, info_top + 85), "Standardized postprandial Indian carbohydrate challenge.", font=self._get_font(18), fill=pal["text_primary"])
+            draw.text((95, info_top + 22), "EVIDENCE PARAMETERS", font=self._get_font(20), fill=pal["badge_text"])
+            sub_desc = scene.get("subtitle_text") or scene.get("narration") or "Rigorous clinical analysis of patient data."
+            if len(sub_desc) > 90:
+                draw.text((95, info_top + 55), sub_desc[:48], font=self._get_font(18), fill=pal["text_primary"])
+                draw.text((95, info_top + 85), sub_desc[48:95] + ("..." if len(sub_desc) > 95 else ""), font=self._get_font(18), fill=pal["text_primary"])
+            else:
+                draw.text((95, info_top + 55), sub_desc, font=self._get_font(18), fill=pal["text_primary"])
 
         elif role == "curve_comparison" or (isinstance(role, str) and "curve" in role.lower()) or scene_idx == 1:
             # SCENE 2: Kinetic Dual Glycemic Curve Graph
@@ -1436,9 +1458,9 @@ class AnimationEngine:
             # Timeline bar
             bar_top = box_top + 90
             draw.rounded_rectangle([80, bar_top, self.width - 80, bar_top + 50], radius=14, fill=(226, 232, 240))
-            # Green optimal window 0-30m
+            # Optimal window bar
             draw.rounded_rectangle([80, bar_top, 80 + int((self.width - 160) * 0.45), bar_top + 50], radius=14, fill=(34, 197, 94))
-            draw.text((100, bar_top + 14), "0 to 30 MIN: OPTIMAL SHATAPADI (-34%)", font=self._get_font(18), fill=(255, 255, 255))
+            draw.text((100, bar_top + 14), "OPTIMAL INTERVENTION WINDOW", font=self._get_font(18), fill=(255, 255, 255))
 
             # Comparison Table Cards
             card_top = bar_top + 80
@@ -1464,7 +1486,10 @@ class AnimationEngine:
             draw.text((110, box_top + 50), "-34%", font=self._get_font(84), fill=pal["accent_primary"])
             draw.text((340, box_top + 65), "PEAK POSTPRANDIAL", font=self._get_font(24), fill=pal["text_primary"])
             draw.text((340, box_top + 98), "GLUCOSE ATTENUATION", font=self._get_font(24), fill=pal["accent_primary"])
-            draw.text((340, box_top + 132), "p < 0.001 • n=48 Crossover Trial", font=self._get_font(18), fill=pal["text_muted"])
+            sub_badge = (scene.get("subtitle_text") or "Clinical Trial Parameters")
+            if len(sub_badge) > 36:
+                sub_badge = sub_badge[:33] + "..."
+            draw.text((340, box_top + 132), sub_badge, font=self._get_font(18), fill=pal["text_muted"])
 
             # 3 Structured Clinical Outcomes
             list_top = box_top + 210
@@ -1482,7 +1507,10 @@ class AnimationEngine:
             list_top3 = list_top2 + 150
             draw.rounded_rectangle([75, list_top3, self.width - 75, list_top3 + 130], radius=16, fill=(255, 255, 255), outline=pal["card_border"], width=2)
             draw.text((95, list_top3 + 16), "3. PRACTICAL TRANSLATION", font=self._get_font(20), fill=pal["accent_secondary"])
-            draw.text((95, list_top3 + 46), "10-minute Shatapadi walk within 15–30 minutes post-dinner.", font=self._get_font(18), fill=pal["text_primary"])
+            p_action = (scene.get("narration") or "Translate clinical findings into daily sustainable habits.")
+            if len(p_action) > 55:
+                p_action = p_action[:52] + "..."
+            draw.text((95, list_top3 + 46), p_action, font=self._get_font(18), fill=pal["text_primary"])
             draw.text((95, list_top3 + 76), "Simple, free, culturally rooted metabolic therapy.", font=self._get_font(18), fill=pal["text_muted"])
 
     # -------------------------------------------------------------

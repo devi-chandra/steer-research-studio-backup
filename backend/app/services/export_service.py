@@ -483,7 +483,7 @@ steerhealth.in
         # SLIDE 6: Actionable Takeaways & Recommendations
         # =============================================================
         s6 = prs.slides.add_slide(blank_layout)
-        add_header(s6, "Clinical Translation", "Actionable Guidance: The Shatapadi Protocol")
+        add_header(s6, "Clinical Translation", f"Actionable Guidance: {topic or 'Evidence-Based Protocol'}")
 
         card_act = s6.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.8), Inches(11.7), Inches(5.0))
         card_act.fill.solid()
@@ -493,15 +493,19 @@ steerhealth.in
         tf_act.word_wrap = True
 
         p_a1 = tf_act.paragraphs[0]
-        p_a1.text = "PRACTICAL PROTOCOL (10-MINUTE POSTPRANDIAL HABIT)"
+        p_a1.text = f"PRACTICAL PROTOCOL ({meta.get('study_type', 'Clinical Investigation').upper()})"
         p_a1.font.size = Pt(14)
         p_a1.font.bold = True
         p_a1.font.color.rgb = c_rust
 
+        c1_t = claims[0].claim_text if claims and len(claims) > 0 and hasattr(claims[0], "claim_text") else (draft.main_message if draft else "Targeted metabolic lifestyle habits.")
+        c2_t = claims[1].claim_text if claims and len(claims) > 1 and hasattr(claims[1], "claim_text") else "Consistency and daily timing optimize metabolic outcomes."
+        c3_t = claims[2].claim_text if claims and len(claims) > 2 and hasattr(claims[2], "claim_text") else "Focus on sustainable micro-habits rather than extreme temporary restrictions."
+
         steps = [
-            ("Timing is Key", "Begin a gentle 10-minute stroll within 15 to 30 minutes following meal completion."),
-            ("Pacing & Intensity", "Keep the walk light and conversational; avoid strenuous cardio immediately after dining."),
-            ("Cultural Wisdom Validated", "Modern metabolic data directly corroborates the traditional Indian practice of Shatapadi (100 steps)."),
+            ("Primary Finding", c1_t[:120]),
+            ("Mechanistic Pathway", c2_t[:120]),
+            ("Lifestyle Application", c3_t[:120]),
             ("Cross-Format Content Ready", "Assets generated: Instagram Carousel (6 slides), Static Post, 24fps Animated Reel, Captions & Ledger.")
         ]
         for title_s, desc_s in steps:

@@ -3,7 +3,13 @@ from typing import Dict, Any, List, Optional
 
 logger = logging.getLogger(__name__)
 
-def get_professional_reel_storyboard(
+def is_sample_walk_paper(paper_title: str) -> bool:
+    t = (paper_title or "").lower()
+    return "postprandial glycemic excursions and 10-minute post-meal walking in south asian adults with prediabetes" in t
+
+def _build_dynamic_paper_storyboard(
+    visual_style: str,
+    language: str,
     claims: Optional[List[Dict[str, Any]]],
     paper_title: str,
     voice_name: str,
@@ -11,8 +17,500 @@ def get_professional_reel_storyboard(
 ) -> Dict[str, Any]:
     clm_ids = [c.get("claim_id", f"CLM-{i+1:03d}") for i, c in enumerate(claims)] if claims else ["CLM-001", "CLM-002", "CLM-003"]
     primary_clm = clm_ids[0] if clm_ids else "CLM-001"
+    c1_obj = claims[0] if claims else {}
+    c2_obj = claims[1] if claims and len(claims) > 1 else c1_obj
+    c3_obj = claims[2] if claims and len(claims) > 2 else c1_obj
+
+    c1 = c1_obj.get("claim_text") or f"Clinical evidence demonstrates significant metabolic benefits in {paper_title[:50]}."
+    c2 = c2_obj.get("claim_text") or "Targeted lifestyle interventions optimize metabolic regulation and insulin sensitivity."
+    c3 = c3_obj.get("claim_text") or "Daily adherence and timing are essential for sustained metabolic vitality."
+    sample_size = c1_obj.get("sample_size") or "Clinical Cohort"
+    short_title = paper_title[:55]
+
+    if visual_style == "inside_your_body":
+        scenes = [
+            {
+                "scene_number": 1,
+                "duration_seconds": 10.0,
+                "visual_cue": "Red blood cell character smiling in flowing arterial bloodstream delivering oxygen molecules",
+                "on_screen_text": "Finding 1: Circulation & Uptake",
+                "narration": f"Finding one: Clinical research on {short_title[:35]} demonstrates that: {c1}",
+                "subtitle_text": f"Finding 1: {c1[:60]}...",
+                "visual_style": "inside_your_body",
+                "visual_theme": visual_theme,
+                "animation_action": "inside_your_body",
+                "organ_character": "red_blood_cell",
+                "character_name": "Red Blood Cell",
+                "claim_ids": [primary_clm]
+            },
+            {
+                "scene_number": 2,
+                "duration_seconds": 10.5,
+                "visual_cue": "Expressive Brain character firing gentle synaptic sparks in glowing violet neural space",
+                "on_screen_text": "Finding 2: Neural Signalling",
+                "narration": f"Finding two: Metabolic cellular pathways respond directly: {c2}",
+                "subtitle_text": f"Finding 2: {c2[:60]}...",
+                "visual_style": "inside_your_body",
+                "visual_theme": visual_theme,
+                "animation_action": "inside_your_body",
+                "organ_character": "brain",
+                "character_name": "Brain",
+                "claim_ids": [clm_ids[1] if len(clm_ids) > 1 else primary_clm]
+            },
+            {
+                "scene_number": 3,
+                "duration_seconds": 10.0,
+                "visual_cue": "Curved Stomach character regulating smooth gastric emptying and digestive rhythm",
+                "on_screen_text": "Finding 3: Organ Protection",
+                "narration": f"Finding three: Targeted lifestyle components support long-term organ protection: {c3}",
+                "subtitle_text": f"Finding 3: {c3[:60]}...",
+                "visual_style": "inside_your_body",
+                "visual_theme": visual_theme,
+                "animation_action": "inside_your_body",
+                "organ_character": "stomach",
+                "character_name": "Stomach",
+                "claim_ids": [clm_ids[2] if len(clm_ids) > 2 else primary_clm]
+            }
+        ]
+        target_dur = 30
+        reel_title = f"Inside Your Body: {short_title}"
+        hook = f"Take a look inside your biology: What does new research reveal about {short_title}?"
+        takeaway = "Targeted metabolic habits directly support vital cellular and digestive health."
+
+    elif visual_style == "everyday_human":
+        scenes = [
+            {
+                "scene_number": 1,
+                "duration_seconds": 5.5,
+                "visual_cue": "Relatable urban dining table with family finishing meal",
+                "on_screen_text": f"Clinical Routine: {short_title[:35]}...",
+                "narration": f"How do clinical findings translate into real-life habits? Here is what research shows about {short_title}.",
+                "subtitle_text": f"Real-life routine: {short_title[:45]}...",
+                "visual_style": "everyday_human",
+                "visual_theme": visual_theme,
+                "animation_action": "everyday_human",
+                "scene_role": "dining_table",
+                "character_name": None,
+                "claim_ids": [primary_clm]
+            },
+            {
+                "scene_number": 2,
+                "duration_seconds": 6.5,
+                "visual_cue": "Smartwatch on wrist lighting up with health notification",
+                "on_screen_text": f"Evidence Cohort: {sample_size}",
+                "narration": f"Evaluating clinical data across {sample_size}: {c1}",
+                "subtitle_text": f"{c1[:60]}...",
+                "visual_style": "everyday_human",
+                "visual_theme": visual_theme,
+                "animation_action": "everyday_human",
+                "scene_role": "smartwatch_alert",
+                "character_name": None,
+                "claim_ids": [primary_clm]
+            },
+            {
+                "scene_number": 3,
+                "duration_seconds": 6.5,
+                "visual_cue": "Person walking smoothly on apartment terrace under sunset sky",
+                "on_screen_text": "Actionable Daily Habit",
+                "narration": f"Putting science into practice: {c2}",
+                "subtitle_text": f"{c2[:60]}...",
+                "visual_style": "everyday_human",
+                "visual_theme": visual_theme,
+                "animation_action": "everyday_human",
+                "scene_role": "terrace_walk",
+                "character_name": None,
+                "claim_ids": [clm_ids[1] if len(clm_ids) > 1 else primary_clm]
+            },
+            {
+                "scene_number": 4,
+                "duration_seconds": 6.0,
+                "visual_cue": "Wall clock showing optimal timing window",
+                "on_screen_text": "Consistency Window",
+                "narration": f"Adherence and timing are the key differentiators: {c3}",
+                "subtitle_text": f"{c3[:60]}...",
+                "visual_style": "everyday_human",
+                "visual_theme": visual_theme,
+                "animation_action": "everyday_human",
+                "scene_role": "timing_clock",
+                "character_name": None,
+                "claim_ids": [clm_ids[2] if len(clm_ids) > 2 else primary_clm]
+            },
+            {
+                "scene_number": 5,
+                "duration_seconds": 5.5,
+                "visual_cue": "Happy relaxed human drinking water on balcony with Steer badge",
+                "on_screen_text": "Steer Doctor Takeaway",
+                "narration": "Steer clinical translation: Build sustainable micro-habits that protect your metabolic vitality every day.",
+                "subtitle_text": "Steer Doctor Takeaway: Evidence-backed micro-habits.",
+                "visual_style": "everyday_human",
+                "visual_theme": visual_theme,
+                "animation_action": "everyday_human",
+                "scene_role": "doctor_takeaway",
+                "character_name": None,
+                "claim_ids": clm_ids
+            }
+        ]
+        target_dur = 30
+        reel_title = f"Everyday Habits: {short_title}"
+        hook = f"Looking for practical metabolic habits? Here is what new clinical research reveals about {short_title}."
+        takeaway = "Consistent daily lifestyle habits produce measurable, long-term metabolic health gains."
+
+    elif visual_style == "animated_explainer":
+        scenes = [
+            {
+                "scene_number": 1,
+                "duration_seconds": 5.5,
+                "visual_cue": "Animated continuous glucose sensor with radiating wireless signal waves and study parameters",
+                "on_screen_text": f"Clinical Analysis ({sample_size})",
+                "narration": f"What does clinical research show about {short_title}? Let's examine the scientific data.",
+                "subtitle_text": f"Clinical analysis across {sample_size}.",
+                "visual_style": "animated_explainer",
+                "visual_theme": visual_theme,
+                "animation_action": "animated_explainer",
+                "scene_role": "cgm_intro",
+                "character_name": None,
+                "claim_ids": [primary_clm]
+            },
+            {
+                "scene_number": 2,
+                "duration_seconds": 6.5,
+                "visual_cue": "Dynamic 24fps kinetic curve comparing measured metabolic outcomes",
+                "on_screen_text": c1[:38] + "...",
+                "narration": f"Primary outcome data demonstrated that: {c1}",
+                "subtitle_text": f"{c1[:60]}...",
+                "visual_style": "animated_explainer",
+                "visual_theme": visual_theme,
+                "animation_action": "animated_explainer",
+                "scene_role": "curve_comparison",
+                "character_name": None,
+                "claim_ids": [primary_clm]
+            },
+            {
+                "scene_number": 3,
+                "duration_seconds": 6.5,
+                "visual_cue": "Biochemical transport diagram showing physiological pathway gates",
+                "on_screen_text": "Intervention Pathway",
+                "narration": f"Biological analysis confirms the underlying pathway: {c2}",
+                "subtitle_text": f"{c2[:60]}...",
+                "visual_style": "animated_explainer",
+                "visual_theme": visual_theme,
+                "animation_action": "animated_explainer",
+                "scene_role": "glut4_mechanism",
+                "character_name": None,
+                "claim_ids": [clm_ids[1] if len(clm_ids) > 1 else primary_clm]
+            },
+            {
+                "scene_number": 4,
+                "duration_seconds": 6.0,
+                "visual_cue": "Comparative timeline illustrating clinical nuance across conditions",
+                "on_screen_text": "Evidence Scope & Nuance",
+                "narration": f"Investigators noted essential clinical nuances: {c3}",
+                "subtitle_text": f"{c3[:60]}...",
+                "visual_style": "animated_explainer",
+                "visual_theme": visual_theme,
+                "animation_action": "animated_explainer",
+                "scene_role": "timing_window",
+                "character_name": None,
+                "claim_ids": [clm_ids[2] if len(clm_ids) > 2 else primary_clm]
+            },
+            {
+                "scene_number": 5,
+                "duration_seconds": 5.5,
+                "visual_cue": "Steer clinical takeaway badge with green verified shield and citation card",
+                "on_screen_text": "Steer Clinical Standard",
+                "narration": f"Steer clinical translation: Verified against peer-reviewed publication: {short_title}.",
+                "subtitle_text": "Steer Clinical Translation: Verified Research.",
+                "visual_style": "animated_explainer",
+                "visual_theme": visual_theme,
+                "animation_action": "animated_explainer",
+                "scene_role": "steer_takeaway",
+                "character_name": None,
+                "claim_ids": clm_ids
+            }
+        ]
+        target_dur = 30
+        reel_title = f"Animated Explainer: {short_title}"
+        hook = f"What does continuous data analysis show about {short_title}? Explore the evidence."
+        takeaway = "Evidence-based metabolic interventions create verifiable physiological improvements."
+
+    elif visual_style == "professional":
+        scenes = [
+            {
+                "scene_number": 1,
+                "duration_seconds": 6.0,
+                "visual_cue": f"Clinical study protocol card displaying {sample_size} cohort",
+                "on_screen_text": f"Clinical Protocol ({sample_size})",
+                "narration": f"In this investigation with {sample_size}, clinical researchers examined: {short_title}.",
+                "subtitle_text": f"Investigation: {sample_size}.",
+                "visual_style": "professional",
+                "visual_theme": visual_theme,
+                "animation_action": "professional",
+                "character_name": None,
+                "claim_ids": [primary_clm]
+            },
+            {
+                "scene_number": 2,
+                "duration_seconds": 6.5,
+                "visual_cue": "Continuous trajectory chart with error bars showing statistical findings",
+                "on_screen_text": c1[:38] + "...",
+                "narration": f"The primary endpoint analysis demonstrated that: {c1}",
+                "subtitle_text": f"{c1[:60]}...",
+                "visual_style": "professional",
+                "visual_theme": visual_theme,
+                "animation_action": "professional",
+                "character_name": None,
+                "claim_ids": [primary_clm]
+            },
+            {
+                "scene_number": 3,
+                "duration_seconds": 6.5,
+                "visual_cue": "Biochemical pathway diagram highlighting cellular metabolic transport",
+                "on_screen_text": "Biochemical Pathway",
+                "narration": f"Mechanistic analysis indicates: {c2}",
+                "subtitle_text": f"{c2[:60]}...",
+                "visual_style": "professional",
+                "visual_theme": visual_theme,
+                "animation_action": "professional",
+                "character_name": None,
+                "claim_ids": [clm_ids[1] if len(clm_ids) > 1 else primary_clm]
+            },
+            {
+                "scene_number": 4,
+                "duration_seconds": 6.5,
+                "visual_cue": "Chrono-kinetic timeline comparing study conditions",
+                "on_screen_text": "Clinical Scope & Nuance",
+                "narration": f"Protocol analysis highlights key caveats: {c3}",
+                "subtitle_text": f"{c3[:60]}...",
+                "visual_style": "professional",
+                "visual_theme": visual_theme,
+                "animation_action": "professional",
+                "character_name": None,
+                "claim_ids": [clm_ids[2] if len(clm_ids) > 2 else primary_clm]
+            },
+            {
+                "scene_number": 5,
+                "duration_seconds": 6.5,
+                "visual_cue": "Clinical translation summary with Steer Medical Review Gate verification status",
+                "on_screen_text": "Medical Review Gate Translation",
+                "narration": f"Steer medical translation: Grounding patient guidance in peer-reviewed evidence from: {short_title}.",
+                "subtitle_text": f"Steer Clinical Translation: {short_title[:40]}...",
+                "visual_style": "professional",
+                "visual_theme": visual_theme,
+                "animation_action": "professional",
+                "character_name": None,
+                "claim_ids": clm_ids
+            }
+        ]
+        target_dur = 32
+        reel_title = f"Clinical Evidence: {short_title}"
+        hook = f"Peer-reviewed evidence on {short_title}."
+        takeaway = "Clinical evidence provides actionable insight for personalized metabolic protection."
+
+    else:  # talking_characters
+        scenes = [
+            {
+                "scene_number": 1,
+                "duration_seconds": 5.5,
+                "visual_cue": "3D Glossy Apple character introducing itself with sunny sparkles",
+                "on_screen_text": f"Research: {short_title[:35]}...",
+                "narration": f"Hey! Did you know what clinical research reveals about {short_title}? Let's look at the science!",
+                "subtitle_text": f"Research on: {short_title[:45]}...",
+                "visual_style": "talking_characters",
+                "visual_theme": visual_theme,
+                "animation_action": "talking_character",
+                "character_name": "Dr. Amla",
+                "claim_ids": [primary_clm]
+            },
+            {
+                "scene_number": 2,
+                "duration_seconds": 6.5,
+                "visual_cue": "Apple chatting with cute pink Gut character about research findings",
+                "on_screen_text": f"Cohort Data: {sample_size}",
+                "narration": f"Researchers evaluated evidence across {sample_size}. Here is what they discovered: {c1}",
+                "subtitle_text": f"{c1[:60]}...",
+                "visual_style": "talking_characters",
+                "visual_theme": visual_theme,
+                "animation_action": "talking_character",
+                "character_name": "Dr. Amla",
+                "claim_ids": [primary_clm]
+            },
+            {
+                "scene_number": 3,
+                "duration_seconds": 6.5,
+                "visual_cue": "Cute Gut character surrounded by friendly dancing microbiome bacteria",
+                "on_screen_text": "Metabolic Mechanism!",
+                "narration": f"How does the body respond? Clinical analysis shows: {c2}",
+                "subtitle_text": f"{c2[:60]}...",
+                "visual_style": "talking_characters",
+                "visual_theme": visual_theme,
+                "animation_action": "talking_character",
+                "character_name": "Dr. Amla",
+                "claim_ids": [clm_ids[1] if len(clm_ids) > 1 else primary_clm]
+            },
+            {
+                "scene_number": 4,
+                "duration_seconds": 6.0,
+                "visual_cue": "Relatable cartoon girl with salad bowl asking interactive question",
+                "on_screen_text": "Everyday Application",
+                "narration": f"Making it practical: {c3}",
+                "subtitle_text": f"{c3[:60]}...",
+                "visual_style": "talking_characters",
+                "visual_theme": visual_theme,
+                "animation_action": "talking_character",
+                "character_name": None,
+                "claim_ids": [clm_ids[2] if len(clm_ids) > 2 else primary_clm]
+            },
+            {
+                "scene_number": 5,
+                "duration_seconds": 5.5,
+                "visual_cue": "Group celebration outro with Steer Metabolic Club handoff badge",
+                "on_screen_text": "Explore on Steer  ➔",
+                "narration": "Steer doctor takeaway: Anchor your routine in real science. Save this reel and explore more on Steer!",
+                "subtitle_text": "Steer Doctor Takeaway: Real Science • Real Health.",
+                "visual_style": "talking_characters",
+                "visual_theme": visual_theme,
+                "animation_action": "talking_character",
+                "character_name": "Dr. Amla",
+                "claim_ids": clm_ids
+            }
+        ]
+        target_dur = 30
+        reel_title = f"The Science of {short_title}"
+        hook = f"Hey! What does new medical research say about {short_title}?"
+        takeaway = "Evidence-based daily habits protect your long-term metabolic health."
+
+    if language == "hi":
+        hook = f"क्लीनिकल रिसर्च ब्रीफिंग: {short_title[:45]}. जानिए अध्ययन में क्या पाया गया।"
+        takeaway = "प्रमाण-आधारित आदतें आपके लंबे समय के मेटाबॉलिक स्वास्थ्य की रक्षा करती हैं।"
+        for s in scenes:
+            s_num = s["scene_number"]
+            if s_num == 1:
+                s["narration"] = f"क्लीनिकल रिसर्च ब्रीफिंग: {short_title[:45]}. आइए देखते हैं कि अध्ययन में क्या पाया गया।"
+                s["subtitle_text"] = f"क्लीनिकल रिसर्च: {short_title[:40]}..."
+            elif s_num == 2:
+                s["narration"] = f"अध्ययन का दायरा: {sample_size}। शोधकर्ताओं ने पाया कि: {c1[:80]}"
+                s["subtitle_text"] = f"{c1[:60]}..."
+            elif s_num == 3:
+                s["narration"] = f"शरीर की कार्यप्रणाली: {c2[:80]}"
+                s["subtitle_text"] = f"{c2[:60]}..."
+            elif s_num == 4:
+                s["narration"] = f"दैनिक जीवन में उपयोग: {c3[:80]}"
+                s["subtitle_text"] = f"{c3[:60]}..."
+            elif s_num == 5:
+                s["narration"] = "डॉक्टर की सलाह: विज्ञान-समर्थित आदतों को अपनाएं। Steer पर और जानें।"
+                s["subtitle_text"] = "डॉक्टर की सलाह: विज्ञान-समर्थित आदतें अपनाएं।"
+    elif language == "te":
+        hook = f"క్లినికల్ రీసెర్చ్: {short_title[:45]}. కొత్త అధ్యయనంలో ఏం తేలింది?"
+        takeaway = "శాస్త్రీయ ఆధారిత అలవాట్లు మీ మెటబాలిక్ ఆరోగ్యాన్ని కాపాడతాయి."
+        for s in scenes:
+            s_num = s["scene_number"]
+            if s_num == 1:
+                s["narration"] = f"క్లినికల్ రీసెర్చ్: {short_title[:45]}. కొత్త అధ్యయనంలో ఏం తేలిందో చూద్దాం."
+                s["subtitle_text"] = f"క్లినికల్ రీసెర్చ్: {short_title[:40]}..."
+            elif s_num == 2:
+                s["narration"] = f"అధ్యయనం పరిధి: {sample_size}. పరిశోధకులు గుర్తించిన అంశం: {c1[:80]}"
+                s["subtitle_text"] = f"{c1[:60]}..."
+            elif s_num == 3:
+                s["narration"] = f"శరీరంలో మార్పులు: {c2[:80]}"
+                s["subtitle_text"] = f"{c2[:60]}..."
+            elif s_num == 4:
+                s["narration"] = f"రోజువారీ ఆచరణ: {c3[:80]}"
+                s["subtitle_text"] = f"{c3[:60]}..."
+            elif s_num == 5:
+                s["narration"] = "డాక్టర్ సలహా: సైన్స్ ఆధారిత అలవాట్లను పాటించండి. Steer లో మరిన్ని వివరాలు."
+                s["subtitle_text"] = "డాక్టర్ సలహా: సైన్స్ ఆధారిత అలవాట్లు."
+    elif language == "ta":
+        hook = f"மருத்துவ ஆய்வு: {short_title[:45]}. புதிய கண்டுபிடிப்பு என்ன?"
+        takeaway = "அறிவியல் பூர்வமான பழக்கங்கள் உங்கள் வளர்சிதை மாற்ற ஆரோக்கியத்தை பாதுகாக்கும்."
+        for s in scenes:
+            s_num = s["scene_number"]
+            if s_num == 1:
+                s["narration"] = f"மருத்துவ ஆய்வு: {short_title[:45]}. புதிய ஆய்வு முடிவுகளை பார்ப்போம்."
+                s["subtitle_text"] = f"மருத்துவ ஆய்வு: {short_title[:40]}..."
+            elif s_num == 2:
+                s["narration"] = f"ஆய்வு விவரம்: {sample_size}. முக்கிய முடிவு: {c1[:80]}"
+                s["subtitle_text"] = f"{c1[:60]}..."
+            elif s_num == 3:
+                s["narration"] = f"உடலியல் செயல்பாடு: {c2[:80]}"
+                s["subtitle_text"] = f"{c2[:60]}..."
+            elif s_num == 4:
+                s["narration"] = f"தினசரி பழக்கம்: {c3[:80]}"
+                s["subtitle_text"] = f"{c3[:60]}..."
+            elif s_num == 5:
+                s["narration"] = "மருத்துவர் பரிந்துரை: அறிவியல் பூர்வமான பழக்கங்களை பின்பற்றுங்கள். Steer-ல் அறியுங்கள்."
+                s["subtitle_text"] = "மருத்துவர் பரிந்துரை: அறிவியல் பழக்கங்கள்."
+    elif language == "kn":
+        hook = f"ವೈದ್ಯಕೀಯ ಸಂಶೋಧನೆ: {short_title[:45]}. ಹೊಸ ಅಧ್ಯಯನ ಏನು ಹೇಳುತ್ತದೆ?"
+        takeaway = "ವಿಜ್ಞಾನ ಆಧಾರಿತ ಸಣ್ಣ ಅಭ್ಯಾಸಗಳು ನಿಮ್ಮ ಮೆಟಬಾಲಿಕ್ ಆರೋಗ್ಯ ಕಾಪಾಡುತ್ತವೆ."
+        for s in scenes:
+            s_num = s["scene_number"]
+            if s_num == 1:
+                s["narration"] = f"ವೈದ್ಯಕೀಯ ಸಂಶೋಧನೆ: {short_title[:45]}. ಹೊಸ ಅಧ್ಯಯನದ ವಿವರ ತಿಳಿಯೋಣ."
+                s["subtitle_text"] = f"ವೈದ್ಯಕೀಯ ಸಂಶೋಧನೆ: {short_title[:40]}..."
+            elif s_num == 2:
+                s["narration"] = f"ಅಧ್ಯಯನದ ವ್ಯಾಪ್ತಿ: {sample_size}. ಪ್ರಮುಖ ಅಂಶ: {c1[:80]}"
+                s["subtitle_text"] = f"{c1[:60]}..."
+            elif s_num == 3:
+                s["narration"] = f"ದೇಹದ ಪ್ರಕ್ರಿಯೆ: {c2[:80]}"
+                s["subtitle_text"] = f"{c2[:60]}..."
+            elif s_num == 4:
+                s["narration"] = f"ದೈನಂದಿನ ಬಳಕೆ: {c3[:80]}"
+                s["subtitle_text"] = f"{c3[:60]}..."
+            elif s_num == 5:
+                s["narration"] = "ವೈದ್ಯರ ಸಲಹೆ: ವಿಜ್ಞಾನ ಆಧಾರಿತ ಅಭ್ಯಾಸಗಳನ್ನು ರೂಢಿಸಿಕೊಳ್ಳಿ. Steer ನಲ್ಲಿ ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ."
+                s["subtitle_text"] = "ವೈದ್ಯರ ಸಲಹೆ: ವಿಜ್ಞಾನ ಆಧಾರಿತ ಅಭ್ಯಾಸ."
+    elif language == "ml":
+        hook = f"ക്ലിനിക്കൽ പഠനം: {short_title[:45]}. പുതിയ കണ്ടെത്തലുകൾ എന്തൊക്കെ?"
+        takeaway = "ശാസ്ത്രീയമായ നല്ല ശീലങ്ങൾ മെറ്റബോളിക് ആരോഗ്യം സംരക്ഷിക്കുന്നു."
+        for s in scenes:
+            s_num = s["scene_number"]
+            if s_num == 1:
+                s["narration"] = f"ക്ലിനിക്കൽ പഠനം: {short_title[:45]}. പുതിയ കണ്ടെത്തലുകൾ പരിശോധിക്കാം."
+                s["subtitle_text"] = f"ക്ലിനിക്കൽ പഠനം: {short_title[:40]}..."
+            elif s_num == 2:
+                s["narration"] = f"പഠന വ്യാപ്തി: {sample_size}. പ്രധാന കണ്ടെത്തൽ: {c1[:80]}"
+                s["subtitle_text"] = f"{c1[:60]}..."
+            elif s_num == 3:
+                s["narration"] = f"ശരീരത്തിലെ മാറ്റങ്ങൾ: {c2[:80]}"
+                s["subtitle_text"] = f"{c2[:60]}..."
+            elif s_num == 4:
+                s["narration"] = f"ദൈനംദിന ശീലങ്ങൾ: {c3[:80]}"
+                s["subtitle_text"] = f"{c3[:60]}..."
+            elif s_num == 5:
+                s["narration"] = "ഡോക്ടറുടെ നിർദ്ദേശം: ശാസ്ത്രീയ ശീലങ്ങൾ പിന്തുടരൂ. Steer-ൽ കൂടുതൽ അറിയൂ."
+                s["subtitle_text"] = "ഡോക്ടറുടെ നിർദ്ദേശം: ശാസ്ത്രീയ ശീലങ്ങൾ."
+
+    return {
+        "reel_title": reel_title,
+        "hook": hook,
+        "target_duration_seconds": target_dur,
+        "mode": "professional" if visual_style == "professional" else "everyday",
+        "visual_style": visual_style,
+        "visual_theme": visual_theme,
+        "language": language,
+        "voice_name": voice_name,
+        "scenes": scenes,
+        "practical_takeaway": takeaway,
+        "caption": f"Doctor-Led Research Briefing: {paper_title}\n\nKey Finding: {c1}\n\nClinical Mechanism: {c2}\n\nSteer Takeaway: {takeaway}\n\nSource: {short_title} 🩺✨",
+        "hashtags": ["#MetabolicHealth", "#ClinicalEvidence", "#SteerHealth", "#DoctorLed"],
+        "claim_ids": clm_ids,
+        "source_citation": f"Evidence: {short_title}"
+    }
+
+def get_professional_reel_storyboard(
+    claims: Optional[List[Dict[str, Any]]],
+    paper_title: str,
+    voice_name: str,
+    visual_theme: str = "warm_editorial"
+) -> Dict[str, Any]:
+    if not is_sample_walk_paper(paper_title):
+        return _build_dynamic_paper_storyboard("professional", "en", claims, paper_title, voice_name, visual_theme)
+
+    clm_ids = [c.get("claim_id", f"CLM-{i+1:03d}") for i, c in enumerate(claims)] if claims else ["CLM-001", "CLM-002", "CLM-003"]
+    primary_clm = clm_ids[0] if clm_ids else "CLM-001"
     c2 = clm_ids[1] if len(clm_ids) > 1 else primary_clm
     c3 = clm_ids[2] if len(clm_ids) > 2 else primary_clm
+
 
     return {
         "reel_title": "Clinical Evidence: Postprandial Ambulation & Glycemic Response",
@@ -105,6 +603,9 @@ def get_inside_your_body_storyboard(
     voice_name: str,
     visual_theme: str = "warm_editorial"
 ) -> Dict[str, Any]:
+    if not is_sample_walk_paper(paper_title):
+        return _build_dynamic_paper_storyboard("inside_your_body", language, claims, paper_title, voice_name, visual_theme)
+
     clm_ids = [c.get("claim_id", f"CLM-{i+1:03d}") for i, c in enumerate(claims)] if claims else ["CLM-001", "CLM-002", "CLM-003"]
     num_findings = min(3, max(1, len(claims))) if claims else 3
 
@@ -369,6 +870,9 @@ def get_everyday_reel_storyboard(
     voice_name: str,
     visual_theme: str = "warm_editorial"
 ) -> Dict[str, Any]:
+    if not is_sample_walk_paper(paper_title):
+        return _build_dynamic_paper_storyboard("talking_characters", language, claims, paper_title, voice_name, visual_theme)
+
     clm_ids = [c.get("claim_id", f"CLM-{i+1:03d}") for i, c in enumerate(claims)] if claims else ["CLM-001", "CLM-002", "CLM-003"]
     primary_clm = clm_ids[0] if clm_ids else "CLM-001"
     c2 = clm_ids[1] if len(clm_ids) > 1 else primary_clm
@@ -767,6 +1271,9 @@ def get_everyday_human_storyboard(
     voice_name: str,
     visual_theme: str = "warm_editorial"
 ) -> Dict[str, Any]:
+    if not is_sample_walk_paper(paper_title):
+        return _build_dynamic_paper_storyboard("everyday_human", language, claims, paper_title, voice_name, visual_theme)
+
     clm_ids = [c.get("claim_id", f"CLM-{i+1:03d}") for i, c in enumerate(claims)] if claims else ["CLM-001", "CLM-002", "CLM-003"]
     primary_clm = clm_ids[0] if clm_ids else "CLM-001"
     c2 = clm_ids[1] if len(clm_ids) > 1 else primary_clm
@@ -1110,6 +1617,9 @@ def get_animated_explainer_storyboard(
     voice_name: str,
     visual_theme: str = "warm_editorial"
 ) -> Dict[str, Any]:
+    if not is_sample_walk_paper(paper_title):
+        return _build_dynamic_paper_storyboard("animated_explainer", language, claims, paper_title, voice_name, visual_theme)
+
     clm_ids = [c.get("claim_id", f"CLM-{i+1:03d}") for i, c in enumerate(claims)] if claims else ["CLM-001", "CLM-002", "CLM-003"]
     primary_clm = clm_ids[0] if clm_ids else "CLM-001"
     c2 = clm_ids[1] if len(clm_ids) > 1 else primary_clm

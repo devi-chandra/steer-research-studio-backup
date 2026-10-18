@@ -1,6 +1,14 @@
 import { Project, DashboardMetrics, HealthStatus, SettingsData, Claim, ContentDraft, Artifact } from '../types';
 
-const API_BASE = 'http://127.0.0.1:8000';
+const getApiBase = (): string => {
+  if (typeof window !== 'undefined') {
+    if (window.location.port === '5173') return '';
+    return `http://${window.location.hostname || '127.0.0.1'}:8000`;
+  }
+  return 'http://127.0.0.1:8000';
+};
+
+const API_BASE = getApiBase();
 
 export const api = {
   // System & Health
@@ -183,7 +191,17 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config),
     });
-    if (!res.ok) throw new Error('Failed to update reel configuration');
+    if (!res.ok) {
+      let errDetail = 'Failed to update reel configuration';
+      try {
+        const errJson = await res.json();
+        errDetail = errJson.detail || errJson.message || errDetail;
+      } catch {
+        const errText = await res.text().catch(() => '');
+        if (errText) errDetail = errText;
+      }
+      throw new Error(errDetail);
+    }
     return res.json();
   },
 

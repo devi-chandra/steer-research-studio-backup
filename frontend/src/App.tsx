@@ -144,7 +144,10 @@ export const App: React.FC = () => {
             /* Dashboard View */
             <DashboardMetrics
               metrics={metrics}
-              onSelectProject={(id) => setActiveProjectId(id)}
+              onSelectProject={(id) => {
+                setActiveProjectId(id);
+                loadProjectDetails(id);
+              }}
               onOpenNewProject={() => setIsNewProjectOpen(true)}
               onQuickStartDemo={handleQuickStartDemo}
               isQuickStarting={isQuickStarting}
@@ -323,6 +326,7 @@ export const App: React.FC = () => {
         onClose={() => setIsNewProjectOpen(false)}
         onProjectCreated={(id) => {
           setActiveProjectId(id);
+          loadProjectDetails(id);
           setActiveView('content');
           loadHealthAndMetrics();
         }}
